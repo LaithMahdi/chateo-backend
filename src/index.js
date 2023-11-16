@@ -3,27 +3,23 @@ const mongose = require('mongoose');
 const userRouter = require('../routes/userRouter');
 const app = express();
 const bodyParser = require("body-parser");
+const http = require('http');
+const { Server } = require('socket.io');
+const socketController = require('../controller/socketController');
 app.use(bodyParser.json());
-const multer = require('multer');
+const cors = require('cors');
+
+
+
+app.use(cors());
+
 app.get('/', (req, res) => {
     res.send('Welcome');
 });
 
 app.use(express.json());
-let filename = "";
-const mystorage = multer.diskStorage({
-  destination: "./uploads",
-  filename: (req, file, redirect) => {
-    let date = Date.now();
-    let f1 = date + "." + file.mimetype.split("/")[1];
-    redirect(null, f1);
-    filename = f1;
-  },
-});
+
 app.use('/users',userRouter);
-app.use("/uploads", express.static(__dirname + "/uploads"));// Body parsing middleware
-app.use(express.urlencoded({ extended: true })); // Body parsing middleware
-app.use(multer({ storage: mystorage }).single('avatar')); 
 //app.use('/message',messageRouter);
 
 
@@ -36,3 +32,14 @@ mongose.connect("mongodb://127.0.0.1:27017/chatBD")
 }).catch((err)=>{
     console.error(err);
 });
+
+
+// Socket.io setup
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+  },
+});
+
+socketController(io);

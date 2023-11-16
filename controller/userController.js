@@ -52,4 +52,51 @@ const logout = (req, res) => {
     res.status(200).json({ message: 'Logout successful' });
 };
 
-module.exports = { signin, signup,logout };
+
+const getMessageHistory = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const messages = await messageModel.find({
+            $or: [
+                { senderId: userId },
+                { receiverId: userId },
+            ],
+        }).sort({ dateTime: 'asc' });
+
+        res.status(200).json(messages);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
+const getUserFromToken = (token) => {
+    try {
+        const decodedData = jwt.verify(token, SECRET_KEY);
+        return decodedData;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+};
+
+const getAllUsers = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+
+        const authenticatedUser = getUserFromToken(token);
+        if (!authenticatedUser) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
+
+        const users = await userModel.find({ _id: { $ne: authenticatedUser.id } }, '_id username');
+        res.status(200).json({"users":users});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
+
+module.exports = { signin, signup,logout,getMessageHistory,getAllUsers };
