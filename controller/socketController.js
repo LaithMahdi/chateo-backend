@@ -7,7 +7,6 @@ module.exports = (io) => {
         socket.on("login", (id) => {
             console.log("sender ID: " + id);
             clients[id] = socket;
-
             // Update user's socketId in the database
             userModel.findByIdAndUpdate(id, { socketId: socket.id }, (err, user) => {
                 if (err) {

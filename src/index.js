@@ -4,12 +4,12 @@ const userRouter = require('../routes/userRouter');
 const app = express();
 const bodyParser = require("body-parser");
 const http = require('http');
+const multer= require('multer');
+const path = require('path');
 const { Server } = require('socket.io');
 const socketController = require('../controller/socketController');
 app.use(bodyParser.json());
 const cors = require('cors');
-
-
 
 app.use(cors());
 
