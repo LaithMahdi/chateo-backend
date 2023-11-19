@@ -8,7 +8,7 @@ const path = require('path');
 
 const signup = async (req, res) => {
     const { username, email, password } = req.body;
-    const profilePhoto = req.file ? req.file.filename : null; // Check if a file is uploaded
+    const profilePhoto = req.file ? req.file.filename : null; 
 
     try {
         const existUser = await userModel.findOne({ email: email });
@@ -21,17 +21,17 @@ const signup = async (req, res) => {
             email: email,
             password: hashedPassword,
             username: username,
-            profilePhoto: profilePhoto, // Save the profile photo filename
+            profilePhoto: profilePhoto,
         });
 
         const token = jwt.sign({ email: result.email, id: result.id }, SECRET_KEY);
-
         res.status(200).json({ user: result, token: token });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
+
 
 const signin = async (req, res) => {
     const {email, password} = req.body;

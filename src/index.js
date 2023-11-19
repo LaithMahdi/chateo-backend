@@ -21,7 +21,7 @@ app.use(express.json());
 
 app.use('/users',userRouter);
 //app.use('/message',messageRouter);
-
+app.use('/upload/images', express.static('upload/images'));
 
 const port=5000;
 mongose.connect("mongodb://127.0.0.1:27017/chatBD")

@@ -1,6 +1,8 @@
 # Node.js
 node_modules/
 
+upload/
+
 # Logs
 logs
 *.log
@@ -22,7 +24,6 @@ Thumbs.db
 # Editor directories and files
 .idea/
 .vscode/
-
 # Optional: Uncomment the following line if you're using TypeScript
 #*.tsbuildinfo
 

@@ -9,4 +9,5 @@ userRouter.post('/logout',logout);
 userRouter.get('/all-users', getAllUsers);
 userRouter.get('/messages/:userId', getMessageHistory);
 
+
 module.exports = userRouter;
