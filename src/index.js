@@ -1,63 +1,66 @@
 const express = require('express');
-const mongose = require('mongoose');
+const mongoose = require('mongoose');
 const userRouter = require('../routes/userRouter');
-const bodyParser = require("body-parser");
-const http = require('http');
-const messageModel = require('../model/message');
-
-
 const app = express();
-
-const port=5000;
-const server = http.createServer(app);
+const port = 5000;
+const server = require('http').Server(app);
 const io = require('socket.io')(server);
+const messageModel = require('../model/message');
+const messageRouter = require('../routes/messageRouter');
 
 app.get('/', (req, res) => {
     res.send('Welcome');
 });
 
 app.use(express.json());
-
-app.use('/users',userRouter);
-
+app.use('/users', userRouter);
+app.use('/messages', messageRouter);
 app.use('/upload/images', express.static('upload/images'));
 
-mongose.connect("mongodb://127.0.0.1:27017/chatBD")
-.then(()=>{
-    server.listen(port,()=>{
-        console.log(`listening on port ${port}`);
-    })
-}).catch((err)=>{
-    console.error(err);
-});
-
-
-// io.on("connection",(client)=>{
-//   console.log("user connected "+client.id);
-//   client.on("message",(data)=>{
-//     io.to(client.id).emit('res',data);
-//     //io.emit('res',data);
-//     console.log("message : "+data);
-//   });
-// })
-
+// Handle Socket.IO connections
+var clients = {};
 io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.id}`);
+    console.log(`User connected: ${socket.id}`);
 
-  socket.on('message', async (data) => {
-      const message = new messageModel({
-          senderId: data.senderId,
-          receiverId: data.receiverId,
-          content: data.content,
-      });
+    socket.on('login', (id) => {
+        console.log("sender ID :" + id);
+        clients[id] = socket;
+    });
 
-      try {
-          const savedMessage = await message.save();
-          console.log('Message saved to the database:', savedMessage);
-          io.to(socket.id).emit('res', savedMessage);
-      } catch (error) {
-          console.error('Error saving message to the database:', error);
-      }
-  });
+    socket.on('msg', async (msg) => {
+        console.log(msg);
+        let destination = msg.destination;
+        if (clients[destination]) {
+            clients[destination].emit('msg', msg);
+        }
+
+        // Insert the message into the database
+        const message = new messageModel({
+            senderId: msg.sender,
+            receiverId: msg.destination,
+            content: msg.message,
+        });
+
+        try {
+            const savedMessage = await message.save();
+            console.log('Message saved to the database:', savedMessage);
+        } catch (error) {
+            console.error('Error saving message to the database:', error);
+        }
+    });
+
+    
 });
 
+// Connect to MongoDB
+mongoose
+    .connect('mongodb://127.0.0.1:27017/chatBD')
+    .then(() => {
+        // Start the server after connecting to MongoDB
+        server.listen(port, () => {
+            console.log(`Listening on port ${port}`);
+        });
+    })
+    .catch((err) => {
+        console.error(err);
+    });

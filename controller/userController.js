@@ -46,7 +46,7 @@ const signin = async (req, res) => {
         }
         const token = jwt.sign({ email: existUser.email, id: existUser.id }, SECRET_KEY);
         console.log("Login"+existUser);
-        res.status(201).json({ user: existUser, token: token });
+        res.status(201).json({ "message":"success",user: existUser, token: token });
 
     }catch(err){
         console.error(err);
